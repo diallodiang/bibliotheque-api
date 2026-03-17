@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: API Bibliothèque
+  description: |
+    Une API REST pour gérer une bibliothèque de livres.
+
+    Fonctionnalités :
+    - Gestion complète des livres (CRUD)
+    - Recherche et filtrage
+    - Disponibilité des livres
+  version: 1.0.0
+  contact:
+    name: Support API
+    email: support@bibliotheque.fr
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Serveur de développement
+
+tags:
+  - name: Books
+    description: Gestion des livres de la bibliothèque
+
+paths:
+
+  /books:
+    get:
+      tags:
+        - Books
+      summary: Récupérer tous les livres
+      operationId: getAllBooks
+      responses:
+        "200":
+          description: Livres récupérés avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Books retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Book"
+                  count:
+                    type: integer
+                    example: 10
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - Books
+      summary: Créer un nouveau livre
+      operationId: createBook
+      requestBody:
+        required: true
+        description: Informations du livre
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "201":
+          description: Livre créé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Book created successfully
+                  data:
+                    $ref: "#/components/schemas/Book"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /books/{id}:
+    get:
+      tags:
+        - Books
+      summary: Récupérer un livre par ID
+      operationId: getBookById
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      responses:
+        "200":
+          description: Livre récupéré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Book retrieved successfully
+                  data:
+                    $ref: "#/components/schemas/Book"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      tags:
+        - Books
+      summary: Mettre à jour un livre
+      operationId: updateBook
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "200":
+          description: Livre mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Books
+      summary: Supprimer un livre
+      operationId: deleteBook
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      responses:
+        "200":
+          description: Livre supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Book deleted successfully
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Le Petit Prince
+        author:
+          type: string
+          example: Antoine de Saint-Exupéry
+        isbn:
+          type: string
+          example: "978-2-07-061275-8"
+        published_year:
+          type: integer
+          example: 1943
+        genre:
+          type: string
+          example: Fiction
+        available:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+
+    BookInput:
+      type: object
+      required:
+        - title
+        - author
+        - isbn
+      properties:
+        title:
+          type: string
+          example: Le Petit Prince
+        author:
+          type: string
+          example: Antoine de Saint-Exupéry
+        isbn:
+          type: string
+          example: "978-2-07-061275-8"
+        published_year:
+          type: integer
+          example: 1943
+        genre:
+          type: string
+          example: Fiction
+        available:
+          type: boolean
+          example: true
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: An error occurred
+
+  parameters:
+    BookId:
+      name: id
+      in: path
+      required: true
+      description: Identifiant du livre
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+  responses:
+    NotFound:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InternalServerError:
+      description: Erreur serveur interne
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
